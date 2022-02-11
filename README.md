@@ -1,4 +1,4 @@
-## a list of standalong react components
+## A list of standalone react components
 
 #### setup
 
