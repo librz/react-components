@@ -1,6 +1,12 @@
 ## a list of standalong react components
 
-#### dev
+#### setup
+
+```bash
+npm install
+```
+
+#### development
 
 ```bash
 npm run dev
