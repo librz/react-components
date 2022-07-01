@@ -149,8 +149,8 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
   }
 
 	return (
-		<div className="MyDatePicker">
-      <div className="mdp-input" onClick={() => { setShowPicker(true) }}>
+		<div className="datepicker">
+      <div className="dateinput" onClick={() => { setShowPicker(true) }}>
         <input 
           type="date" 
           ref={inputRef}
@@ -159,8 +159,8 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
       </div>
       {
         showPicker &&
-        <div className="mdp-container">
-          <div className='mdpc-head'>
+        <div className="datepanel">
+          <div className='datepanel-head'>
             <div className='mdpch-button'>
               <div className='mdpchb-inner' onClick={()=> setYearByOffset(-1)}>
                 <span className='mdpchbi-left-arrows' />
@@ -186,7 +186,7 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
               </div>
             </div>
           </div>
-          <div className='mdpc-body'>
+          <div className='datepanel-body'>
             {renderCalendar()}
           </div>
         </div>

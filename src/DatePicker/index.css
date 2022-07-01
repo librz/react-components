@@ -1,8 +1,8 @@
-.MyDatePicker {
+.datepicker {
   position: relative;
 }
 
-.MyDatePicker * {
+.datepicker * {
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none;   /* Chrome/Safari/Opera */
   -khtml-user-select: none;    /* Konqueror */
@@ -11,16 +11,18 @@
   user-select: none;           /* Non-prefixed version, currently */  
 }
 
-.mdp-input{
+.dateinput {
   width: 150px;
   height: 35px;
   overflow: hidden;
   border-radius: 20px;
 }
-.mdp-input input:focus{
+
+.dateinput input:focus{
   outline: none;
 }
-.mdp-input input{
+
+.dateinput input{
   width: 130%;
   background: #f5f5f5;
   border: none;
@@ -33,8 +35,7 @@
   cursor: pointer;
 }
 
-.mdp-container {
-  float: left;
+.datepanel {
   position: absolute;
   left:0;
   top: 40px;
@@ -46,13 +47,14 @@
   overflow: hidden;
   padding: 25px 30px;
 }
-.mdpc-head{
-  float: left;
+
+.datepanel-head {
   width: 100%;
   height: 53px;
+  display: flex;
 }
-.mdpc-body{
-  float: left;
+
+.datepanel-body {
   width: 100%;
   margin-top: 20px;
 }
@@ -61,13 +63,14 @@
 * Controls
 */
 
-.mdpch-button{
-  float: left;
+.mdpch-button {
   width: 45px;
   height: 100%;
   box-sizing: border-box;
   position: relative;
+  border: 1px solid black;
 }
+
 .mdpchb-inner:hover > span{
   border-color: #555!important;
 } 
@@ -76,7 +79,6 @@
   background: #eee;
 }
 .mdpchb-inner {
-  float: left;
   height: 35px;
   width: 35px;
   background: #f4f4f4;
@@ -97,7 +99,6 @@
 .mdpchbi-left-arrow,
 .mdpchbi-left-arrows{
   display: block;
-  float: left;
   width: 6px;
   height: 6px;
   border-left: 2px solid #888;
@@ -138,12 +139,12 @@
 
 
 .mdpch-container{
-  float: left;
   width: 120px;
   height: 100%;
+  border: 1px solid orange;
 }
+
 .mdpchc-year{
-  float: left;
   width: 100%;
   height: 30px;
   font-size: 27px;
@@ -151,8 +152,8 @@
   font-weight: 200px;
   text-align: center;
 }
-.mdpchc-month{
-  float: left;
+
+.mdpchc-month {
   width: 100%;
   height: 15px;
   font-size: 13px;
@@ -164,6 +165,24 @@
 /**
 *  Calendar
 */
+
+.c-container {
+  width: 100%;
+  height: 100%;
+}
+
+.cc-head {
+  height: 30px;
+  width: 100%;
+  margin-top: 10px;
+  display: flex;
+}
+
+.cc-body{ 
+  height: 270px;
+  width: 100%;
+}
+
 .cc-month,
 .cc-head,
 .cch-name, 
@@ -175,17 +194,10 @@
   position: relative;
   display: block;
   float: left;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
 
-.c-container{ 
-  width: 100%;
-  height: 100%;
-}
-
-.cc-month{ 
+.cc-month {
   height: 30px;
   width: 100%;
   font-family: Roboto;
@@ -193,11 +205,7 @@
   line-height: 30px;
   color: #666;
 }
-.cc-head{ 
-  height: 30px;
-  width: 100%;
-  margin-top: 10px;
-}
+
 .cch-name{ 
   width: 14.285%;
   height: 30px;
@@ -206,10 +214,6 @@
   color: #666;
   font-size: 9px;
   text-align: center;
-}
-.cc-body{ 
-  height: 270px;
-  width: 100%;
 }
 .c-day-container{ 
   width: 14.285%;
