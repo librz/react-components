@@ -1,35 +1,36 @@
 import { FC, useState, useEffect, useRef } from 'react'
 import { getMonthDetails, getDateFromDateString, getDateStringFromTimestamp, getMonthStr } from './utils'
+import classNames from 'classnames'
+import { weekdayNames } from './constants'
+import { DayDetails } from './interface'
 import './index.css'
 
 interface IProps {
   onChange?: (ts: number) => void
 }
 
-// start of today in milliseconds
-const todayTs = (function () {
-  const oneDay = 24 * 60 * 60 * 1000; // one day in milliseconds
-  const nowTs = Date.now();
-  return nowTs - (nowTs % oneDay) + (new Date().getTimezoneOffset() * 1000 * 60);
-})()
+const todayTs = (function() {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return today.getTime()
+})();
 
 const DatePicker: FC<IProps> = ({ onChange }) => {
 
-  /* state */
-
   const date = new Date();
+  
+  /* state */
 
   const [showPicker, setShowPicker] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [year, setYear] = useState<number>(date.getFullYear());
+  const [month, setMonth] = useState({
+    year: date.getFullYear(),
+    index: date.getMonth() // month index
+  })
 
-  const [month, setMonth] = useState<number>(date.getMonth());
-
-  const [selectedDay, setSelectedDay] = useState<number>(todayTs);
-
-  const [monthDetails, setMonthDetails] = useState(getMonthDetails(date.getFullYear(), date.getMonth()));
+  const [selectedDayTs, setSelectedDayTs] = useState<number>(todayTs); // today is selected by default
 
   /* effects */
 
@@ -42,12 +43,8 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
 
   /* functions */
 
-  function isCurrentDay(day: { timestamp: number }) {
-    return day.timestamp === todayTs;
-  }
-
   function isSelectedDay(day: { timestamp: number }) {
-    return day.timestamp === selectedDay;
+    return day.timestamp === selectedDayTs;
   }
 
   function setDate(dateData: {
@@ -55,9 +52,9 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
     month: number, 
     date?: number
   }) {
-    let selectedDay = new Date(dateData.year, dateData.month-1, dateData.date).getTime();
-    setSelectedDay(selectedDay)
-    onChange && onChange(selectedDay)
+    const ts = new Date(dateData.year, dateData.month-1, dateData.date).getTime();
+    setSelectedDayTs(ts)
+    onChange && onChange(ts)
   }
 
   function updateDateFromInput() {
@@ -65,83 +62,79 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
     let dateData = getDateFromDateString(dateValue || "");
     if(dateData !== null) { 
       setDate(dateData)
-      setYear(dateData.year)
-      setMonth(dateData.month - 1)
-      setMonthDetails(getMonthDetails(dateData.year, dateData.month - 1))
+      setMonth({
+        year: dateData.year,
+        index: dateData.month - 1
+      })
     }
-  }
-
-  function setDateToInput(timestamp: number) {
-    let dateString = getDateStringFromTimestamp(timestamp);
-    if (inputRef.current) {
-      inputRef.current.value = dateString;
-    }
-  }
-
-  function setYearByOffset(offset: number) {
-    const _year = year + offset;
-    const _month = month;
-    setYear(_year);
-    setMonthDetails(getMonthDetails(_year, _month))
   }
 
   function setMonthByOffset(offset: number) {
-    let _year = year;
-    let _month = month + offset;
-    if(month === -1) {
-        _month = 11;
-        _year--;
-    } else if(month === 12) {
-        _month = 0;
-        _year++;
+    const newMonthIndex = month.index + offset;
+    if (newMonthIndex === -1) {
+      setMonth({
+        year: month.year - 1,
+        index: 11
+      })
+    } else if(newMonthIndex === 12) {
+      setMonth({
+        year: month.year + 1,
+        index: 0
+      })
+    } else {
+      setMonth({
+        year: month.year,
+        index: newMonthIndex
+      })
     }
-    setYear(_year)
-    setMonth(_month)
-    setMonthDetails(getMonthDetails(_year, _month))
   }
 
-  function onDateClick(day: { timestamp: number }) {
-    setSelectedDay(day.timestamp)
-    setDateToInput(day.timestamp)
+  function onDateClick(day: DayDetails) {
+    const { timestamp } = day;
+    // update state
+    setSelectedDayTs(day.timestamp)
+    // set input value
+    const dateString = getDateStringFromTimestamp(timestamp);
+    if (inputRef.current) {
+      inputRef.current.value = dateString;
+    }
+    // notify parent component
     if(onChange) {
-      onChange(day.timestamp);
+      onChange(timestamp);
     }
   }
 
   /* view */
 
   function renderCalendar() {
-    let days = monthDetails.map((day, index)=> {
+    const monthDetails = getMonthDetails(month.year, month.index)
+    console.log({ monthDetails })
+    const days = monthDetails.map((day, index)=> {
+      const disabled = day.month !== month.index;
+      const dayClassname = classNames('day-container', {
+        'disabled': disabled,
+        'highlight': isSelectedDay(day) && !disabled,
+      })
       return (
-        <div 
-          className={
-            'c-day-container ' 
-            + (day.month !== 0 ? ' disabled' : '') 
-            + (isCurrentDay(day) ? ' highlight' : '') 
-            + (isSelectedDay(day) ? ' highlight-green' : '')
-          } 
-          key={index}
-        >
-          <div className='cdc-day'>
-            <span onClick={() => onDateClick(day)}>
-              {day.date}
-            </span>
+        <div key={index} className={dayClassname}>
+          <div className='day' onClick={() => onDateClick(day)}>
+            {day.date}
           </div>
         </div>
       )
     })
 
     return (
-      <div className='c-container'>
-        <div className='cc-head'>
+      <div className='calendar'>
+        <div>
           {
-            ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(
-              (d,i) =>
-              <div key={i} className='cch-name'>{d}</div>
+            weekdayNames.map(
+              (name, idx) =>
+              <div key={idx}>{name.slice(0, 1).toUpperCase()}</div>
             )
           }
         </div>
-        <div className='cc-body'>
+        <div>
           {days}
         </div>
       </div>
@@ -149,8 +142,8 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
   }
 
 	return (
-		<div className="MyDatePicker">
-      <div className="mdp-input" onClick={() => { setShowPicker(true) }}>
+		<div className="datepicker">
+      <div className="dateinput" onClick={() => { setShowPicker(true) }}>
         <input 
           type="date" 
           ref={inputRef}
@@ -159,36 +152,19 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
       </div>
       {
         showPicker &&
-        <div className="mdp-container">
-          <div className='mdpc-head'>
-            <div className='mdpch-button'>
-              <div className='mdpchb-inner' onClick={()=> setYearByOffset(-1)}>
-                <span className='mdpchbi-left-arrows' />
+        <div className="datepanel">
+          <div className='datepanel-head'>
+            <div className='month-display'>{getMonthStr(month.index)} {month.year}</div>
+            <div className='month-changer'>
+              <div onClick={()=> setMonthByOffset(-1)}>
+                <span />
               </div>
-            </div>
-            <div className='mdpch-button'>
-              <div className='mdpchb-inner' onClick={()=> setMonthByOffset(-1)}>
-                <span className='mdpchbi-left-arrow' />
-              </div>
-            </div>
-            <div className='mdpch-container'>
-              <div className='mdpchc-year'>{year}</div>
-              <div className='mdpchc-month'>{getMonthStr(month)}</div>
-            </div>
-            <div className='mdpch-button'>
-              <div className='mdpchb-inner' onClick={()=> setMonthByOffset(1)}>
-                <span className='mdpchbi-right-arrow' />
-              </div>
-            </div>
-            <div className='mdpch-button' onClick={()=> setYearByOffset(1)}>
-              <div className='mdpchb-inner'>
-                <span className='mdpchbi-right-arrows' />
+              <div onClick={()=> setMonthByOffset(1)}>
+                <span />
               </div>
             </div>
           </div>
-          <div className='mdpc-body'>
-            {renderCalendar()}
-          </div>
+          {renderCalendar()}
         </div>
       }
     </div>
