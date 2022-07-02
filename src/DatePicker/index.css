@@ -167,12 +167,7 @@
 .day-container.disabled .day {
   color: #ddd;
 }
-.day-container.disabled .day {
-  background: #fff!important;
-}
+
 .day-container.highlight .day {
-  background: #efdbca;
-}
-.day-container.highlight-green .day {
   background: #d4e2cb;
 }

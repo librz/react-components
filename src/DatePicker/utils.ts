@@ -1,4 +1,5 @@
 import { daysMap, monthMap } from './constants'
+import { DayDetails } from './interface'
 
 export function getNumberOfDays(year: number, month: number) {
   return 40 - new Date(year, month, 40).getDate();
@@ -10,19 +11,19 @@ export function getDayDetails(args: {
   firstDay: number,
   year: number,
   month: number
-}) {
-  let date = args.index - args.firstDay; 
-  let day = args.index%7;
-  let prevMonth = args.month-1;
+}): DayDetails {
+  const date = args.index - args.firstDay; 
+  const day = args.index % 7;
+  let prevMonth = args.month - 1;
   let prevYear = args.year;
   if(prevMonth < 0) {
     prevMonth = 11;
     prevYear--;
   }
-  let prevMonthNumberOfDays = getNumberOfDays(prevYear, prevMonth);
-  let _date = (date < 0 ? prevMonthNumberOfDays+date : date % args.numberOfDays) + 1;
-  let month = date < 0 ? -1 : date >= args.numberOfDays ? 1 : 0;
-  let timestamp = new Date(args.year, args.month, _date).getTime();
+  const prevMonthNumberOfDays = getNumberOfDays(prevYear, prevMonth);
+  const _date = (date < 0 ? prevMonthNumberOfDays + date : date % args.numberOfDays) + 1;
+  const month = date < 0 ? -1 : date >= args.numberOfDays ? 1 : 0;
+  const timestamp = new Date(args.year, args.month, _date).getTime();
   return {
     date: _date,
     day,
@@ -32,21 +33,21 @@ export function getDayDetails(args: {
   }
 }
 
-export function getMonthDetails(year: number, month: number) {
-  const firstDay = (new Date(year, month)).getDay();
-  const numberOfDays = getNumberOfDays(year, month);
-  let monthArray = [];
-  let rows = 6;
-  let currentDay = null;
-  let index = 0; 
+export function getMonthDetails(year: number, month: number): DayDetails[] {
+  const monthArray: DayDetails[] = [];
+
+  const rows = 6;
   const cols = 7;
 
-  for(let row=0; row<rows; row++) {
+  let currentDay = null;
+  let index = 0; 
+
+  for(let row = 0; row < rows; row++) {
     for(let col = 0; col < cols; col++) {
       currentDay = getDayDetails({
         index,
-        numberOfDays,
-        firstDay,
+        numberOfDays: getNumberOfDays(year, month),
+        firstDay: (new Date(year, month)).getDay(),
         year,
         month
       });

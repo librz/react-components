@@ -7,18 +7,27 @@ interface IProps {
   onChange?: (ts: number) => void
 }
 
-// start of today in milliseconds
-const todayTs = (function () {
-  const oneDay = 24 * 60 * 60 * 1000; // one day in milliseconds
-  const nowTs = Date.now();
-  return nowTs - (nowTs % oneDay) + (new Date().getTimezoneOffset() * 1000 * 60);
+let todayTs = (function() {
+  const now = Date.now();
+  const oneDay = 24 * 60 * 60 * 1000;
+  return now - (now % oneDay) + (new Date().getTimezoneOffset() * 1000 * 60)
 })()
+
+// const todayTimestamp = (function() {
+//   const now = new Date();
+//   const offset = 60 * 60 * 1000 * now.getHours() 
+//     + 60 * 1000 * now.getMinutes() 
+//     + 1000 * now.getSeconds();
+//   return now.getTime() - offset;
+// })()
+
+// console.log("todayTimestamp", todayTimestamp)
 
 const DatePicker: FC<IProps> = ({ onChange }) => {
 
-  /* state */
-
   const date = new Date();
+  
+  /* state */
 
   const [showPicker, setShowPicker] = useState(false);
 
@@ -105,12 +114,14 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
   /* view */
 
   function renderCalendar() {
-    let days = monthDetails.map((day, index)=> {
+    const days = monthDetails.map((day, index)=> {
       const dayClassname = classNames('day-container', {
         'disabled': day.month !== 0,
-        'highlight': isCurrentDay(day),
-        'highlight-green': isSelectedDay(day)
+        'highlight': isSelectedDay(day),
       })
+      if (isCurrentDay(day)) {
+        console.log(`${day.timestamp} is current day ${todayTs}`)
+      }
       return (
         <div key={index} className={dayClassname}>
           <div className='day' onClick={() => onDateClick(day)}>
