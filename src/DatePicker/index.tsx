@@ -1,5 +1,6 @@
 import { FC, useState, useEffect, useRef } from 'react'
 import { getMonthDetails, getDateFromDateString, getDateStringFromTimestamp, getMonthStr } from './utils'
+import classNames from 'classnames'
 import './index.css'
 
 interface IProps {
@@ -78,13 +79,6 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
     }
   }
 
-  function setYearByOffset(offset: number) {
-    const _year = year + offset;
-    const _month = month;
-    setYear(_year);
-    setMonthDetails(getMonthDetails(_year, _month))
-  }
-
   function setMonthByOffset(offset: number) {
     let _year = year;
     let _month = month + offset;
@@ -112,36 +106,31 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
 
   function renderCalendar() {
     let days = monthDetails.map((day, index)=> {
+      const dayClassname = classNames('day-container', {
+        'disabled': day.month !== 0,
+        'highlight': isCurrentDay(day),
+        'highlight-green': isSelectedDay(day)
+      })
       return (
-        <div 
-          className={
-            'c-day-container ' 
-            + (day.month !== 0 ? ' disabled' : '') 
-            + (isCurrentDay(day) ? ' highlight' : '') 
-            + (isSelectedDay(day) ? ' highlight-green' : '')
-          } 
-          key={index}
-        >
-          <div className='cdc-day'>
-            <span onClick={() => onDateClick(day)}>
-              {day.date}
-            </span>
+        <div key={index} className={dayClassname}>
+          <div className='day' onClick={() => onDateClick(day)}>
+            {day.date}
           </div>
         </div>
       )
     })
 
     return (
-      <div className='c-container'>
-        <div className='cc-head'>
+      <div className='calendar'>
+        <div>
           {
             ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(
               (d,i) =>
-              <div key={i} className='cch-name'>{d}</div>
+              <div key={i} className='cch-name'>{d.slice(0, 1)}</div>
             )
           }
         </div>
-        <div className='cc-body'>
+        <div>
           {days}
         </div>
       </div>
@@ -161,34 +150,17 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
         showPicker &&
         <div className="datepanel">
           <div className='datepanel-head'>
-            <div className='mdpch-button'>
-              <div className='mdpchb-inner' onClick={()=> setYearByOffset(-1)}>
-                <span className='mdpchbi-left-arrows' />
+            <div className='month-display'>{getMonthStr(month)} {year}</div>
+            <div className='month-changer'>
+              <div onClick={()=> setMonthByOffset(-1)}>
+                <span />
               </div>
-            </div>
-            <div className='mdpch-button'>
-              <div className='mdpchb-inner' onClick={()=> setMonthByOffset(-1)}>
-                <span className='mdpchbi-left-arrow' />
-              </div>
-            </div>
-            <div className='mdpch-container'>
-              <div className='mdpchc-year'>{year}</div>
-              <div className='mdpchc-month'>{getMonthStr(month)}</div>
-            </div>
-            <div className='mdpch-button'>
-              <div className='mdpchb-inner' onClick={()=> setMonthByOffset(1)}>
-                <span className='mdpchbi-right-arrow' />
-              </div>
-            </div>
-            <div className='mdpch-button' onClick={()=> setYearByOffset(1)}>
-              <div className='mdpchb-inner'>
-                <span className='mdpchbi-right-arrows' />
+              <div onClick={()=> setMonthByOffset(1)}>
+                <span />
               </div>
             </div>
           </div>
-          <div className='datepanel-body'>
-            {renderCalendar()}
-          </div>
+          {renderCalendar()}
         </div>
       }
     </div>
