@@ -56,7 +56,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border: 1px solid purple;
   padding-left: 16px;
 }
 
@@ -105,7 +104,6 @@
 */
 
 .calendar {
-  border: 1px solid orange;
   margin-top: 4px;
 }
 
@@ -115,7 +113,6 @@
   width: 100%;
   display: flex;
   align-items: center;
-  border: 1px solid black;
   margin-bottom: 4px;
 }
 
@@ -140,7 +137,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* border: 1px solid orange; */
 }
 
 .day-container.disabled {

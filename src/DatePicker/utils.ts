@@ -2,7 +2,10 @@ import { daysMap, monthMap } from './constants'
 import { DayDetails } from './interface'
 
 export function getNumberOfDays(year: number, month: number) {
-  return 40 - new Date(year, month, 40).getDate();
+  // day starts from 1, 0th of next month is the last day of this month (this is called underflow)
+  // see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date#parameters
+  const lastDay = new Date(year, month + 1, 0);
+  return lastDay.getDate();
 }
 
 export function getDayDetails(args: {
@@ -22,8 +25,9 @@ export function getDayDetails(args: {
   }
   const prevMonthNumberOfDays = getNumberOfDays(prevYear, prevMonth);
   const _date = (date < 0 ? prevMonthNumberOfDays + date : date % args.numberOfDays) + 1;
-  const month = date < 0 ? -1 : date >= args.numberOfDays ? 1 : 0;
-  const timestamp = new Date(args.year, args.month, _date).getTime();
+  // 0 means this month, 1 means next month, -1 mans prev month
+  const month: 0 | -1 | 1 = date < 0 ? -1 : date >= args.numberOfDays ? 1 : 0;
+  const timestamp = new Date(args.year, args.month + month, _date).getTime();
   return {
     date: _date,
     day,
@@ -59,13 +63,10 @@ export function getMonthDetails(year: number, month: number): DayDetails[] {
 }
 
 export function getDateFromDateString(dateValue: string) {
-  let dateData = dateValue.split('-').map(d=>parseInt(d, 10));
-  if(dateData.length < 3) 
+  const dateData = dateValue.split('-').map(d => parseInt(d, 10));
+  if (dateData.length < 3) 
       return null;
-
-  let year = dateData[0];
-  let month = dateData[1];
-  let date = dateData[2];
+  const [year, month, date] = dateData;
   return {year, month, date};
 }
 
@@ -74,9 +75,9 @@ export function getMonthStr(month: number): string {
 }
 
 export function getDateStringFromTimestamp(ts: number) {
-  let dateObject = new Date(ts);
-  let month = dateObject.getMonth()+1;
-  let date = dateObject.getDate();
+  const dateObject = new Date(ts);
+  const month = dateObject.getMonth()+1;
+  const date = dateObject.getDate();
   return dateObject.getFullYear() 
     + '-' 
     + (month < 10 ? '0' + month : month) 

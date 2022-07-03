@@ -7,21 +7,11 @@ interface IProps {
   onChange?: (ts: number) => void
 }
 
-let todayTs = (function() {
-  const now = Date.now();
-  const oneDay = 24 * 60 * 60 * 1000;
-  return now - (now % oneDay) + (new Date().getTimezoneOffset() * 1000 * 60)
-})()
-
-// const todayTimestamp = (function() {
-//   const now = new Date();
-//   const offset = 60 * 60 * 1000 * now.getHours() 
-//     + 60 * 1000 * now.getMinutes() 
-//     + 1000 * now.getSeconds();
-//   return now.getTime() - offset;
-// })()
-
-// console.log("todayTimestamp", todayTimestamp)
+const todayTs = (function() {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return today.getTime()
+})();
 
 const DatePicker: FC<IProps> = ({ onChange }) => {
 
@@ -41,6 +31,8 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
 
   const [monthDetails, setMonthDetails] = useState(getMonthDetails(date.getFullYear(), date.getMonth()));
 
+  console.log({ monthDetails })
+
   /* effects */
 
   useEffect(() => {
@@ -51,10 +43,6 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
   }, [])
 
   /* functions */
-
-  function isCurrentDay(day: { timestamp: number }) {
-    return day.timestamp === todayTs;
-  }
 
   function isSelectedDay(day: { timestamp: number }) {
     return day.timestamp === selectedDay;
@@ -119,9 +107,6 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
         'disabled': day.month !== 0,
         'highlight': isSelectedDay(day),
       })
-      if (isCurrentDay(day)) {
-        console.log(`${day.timestamp} is current day ${todayTs}`)
-      }
       return (
         <div key={index} className={dayClassname}>
           <div className='day' onClick={() => onDateClick(day)}>
@@ -137,7 +122,7 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
           {
             ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(
               (d,i) =>
-              <div key={i} className='cch-name'>{d.slice(0, 1)}</div>
+              <div key={i}>{d.slice(0, 1)}</div>
             )
           }
         </div>
