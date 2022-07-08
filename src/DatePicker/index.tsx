@@ -1,6 +1,8 @@
 import { FC, useState, useEffect, useRef } from 'react'
 import { getMonthDetails, getDateFromDateString, getDateStringFromTimestamp, getMonthStr } from './utils'
 import classNames from 'classnames'
+import { weekdayNames } from './constants'
+import { DayDetails } from './interface'
 import './index.css'
 
 interface IProps {
@@ -23,15 +25,12 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [year, setYear] = useState<number>(date.getFullYear());
+  const [month, setMonth] = useState({
+    year: date.getFullYear(),
+    index: date.getMonth() // month index
+  })
 
-  const [month, setMonth] = useState<number>(date.getMonth());
-
-  const [selectedDay, setSelectedDay] = useState<number>(todayTs);
-
-  const [monthDetails, setMonthDetails] = useState(getMonthDetails(date.getFullYear(), date.getMonth()));
-
-  console.log({ monthDetails })
+  const [selectedDayTs, setSelectedDayTs] = useState<number>(todayTs); // today is selected by default
 
   /* effects */
 
@@ -45,7 +44,7 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
   /* functions */
 
   function isSelectedDay(day: { timestamp: number }) {
-    return day.timestamp === selectedDay;
+    return day.timestamp === selectedDayTs;
   }
 
   function setDate(dateData: {
@@ -53,9 +52,9 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
     month: number, 
     date?: number
   }) {
-    let selectedDay = new Date(dateData.year, dateData.month-1, dateData.date).getTime();
-    setSelectedDay(selectedDay)
-    onChange && onChange(selectedDay)
+    const ts = new Date(dateData.year, dateData.month-1, dateData.date).getTime();
+    setSelectedDayTs(ts)
+    onChange && onChange(ts)
   }
 
   function updateDateFromInput() {
@@ -63,49 +62,58 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
     let dateData = getDateFromDateString(dateValue || "");
     if(dateData !== null) { 
       setDate(dateData)
-      setYear(dateData.year)
-      setMonth(dateData.month - 1)
-      setMonthDetails(getMonthDetails(dateData.year, dateData.month - 1))
-    }
-  }
-
-  function setDateToInput(timestamp: number) {
-    let dateString = getDateStringFromTimestamp(timestamp);
-    if (inputRef.current) {
-      inputRef.current.value = dateString;
+      setMonth({
+        year: dateData.year,
+        index: dateData.month - 1
+      })
     }
   }
 
   function setMonthByOffset(offset: number) {
-    let _year = year;
-    let _month = month + offset;
-    if(month === -1) {
-        _month = 11;
-        _year--;
-    } else if(month === 12) {
-        _month = 0;
-        _year++;
+    const newMonthIndex = month.index + offset;
+    if (newMonthIndex === -1) {
+      setMonth({
+        year: month.year - 1,
+        index: 11
+      })
+    } else if(newMonthIndex === 12) {
+      setMonth({
+        year: month.year + 1,
+        index: 0
+      })
+    } else {
+      setMonth({
+        year: month.year,
+        index: newMonthIndex
+      })
     }
-    setYear(_year)
-    setMonth(_month)
-    setMonthDetails(getMonthDetails(_year, _month))
   }
 
-  function onDateClick(day: { timestamp: number }) {
-    setSelectedDay(day.timestamp)
-    setDateToInput(day.timestamp)
+  function onDateClick(day: DayDetails) {
+    const { timestamp } = day;
+    // update state
+    setSelectedDayTs(day.timestamp)
+    // set input value
+    const dateString = getDateStringFromTimestamp(timestamp);
+    if (inputRef.current) {
+      inputRef.current.value = dateString;
+    }
+    // notify parent component
     if(onChange) {
-      onChange(day.timestamp);
+      onChange(timestamp);
     }
   }
 
   /* view */
 
   function renderCalendar() {
+    const monthDetails = getMonthDetails(month.year, month.index)
+    console.log({ monthDetails })
     const days = monthDetails.map((day, index)=> {
+      const disabled = day.month !== month.index;
       const dayClassname = classNames('day-container', {
-        'disabled': day.month !== 0,
-        'highlight': isSelectedDay(day),
+        'disabled': disabled,
+        'highlight': isSelectedDay(day) && !disabled,
       })
       return (
         <div key={index} className={dayClassname}>
@@ -120,9 +128,9 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
       <div className='calendar'>
         <div>
           {
-            ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(
-              (d,i) =>
-              <div key={i}>{d.slice(0, 1)}</div>
+            weekdayNames.map(
+              (name, idx) =>
+              <div key={idx}>{name.slice(0, 1).toUpperCase()}</div>
             )
           }
         </div>
@@ -146,7 +154,7 @@ const DatePicker: FC<IProps> = ({ onChange }) => {
         showPicker &&
         <div className="datepanel">
           <div className='datepanel-head'>
-            <div className='month-display'>{getMonthStr(month)} {year}</div>
+            <div className='month-display'>{getMonthStr(month.index)} {month.year}</div>
             <div className='month-changer'>
               <div onClick={()=> setMonthByOffset(-1)}>
                 <span />
